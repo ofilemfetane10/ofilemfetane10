@@ -1,117 +1,300 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Ofile Mfetane — Writing Archive</title>
+  <meta name="description" content="A public research log on healthcare, inequality, and data systems. Articles pulled live from Medium." />
+
   <style>
-    body {
-      margin: 0;
+    :root{
+      --bg:#0b0b0f;
+      --panel:#111118;
+      --panel2:#12121a;
+      --border:#222;
+      --text:#f2f2f2;
+      --muted:#bdbdbd;
+      --muted2:#8c8c8c;
+      --accent: rgba(255,0,80,.25);
+    }
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
       font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-      background: #0b0b0f;
-      color: #f2f2f2;
+      background: var(--bg);
+      color: var(--text);
     }
-    header {
-      padding: 48px 20px;
-      border-bottom: 1px solid #222;
-      background: radial-gradient(800px 400px at 20% 0%, rgba(255,0,80,.25), transparent 60%);
+    header{
+      padding: 48px 20px 26px;
+      border-bottom: 1px solid var(--border);
+      background: radial-gradient(800px 400px at 20% 0%, var(--accent), transparent 60%);
     }
-    h1 { margin: 0 0 10px; font-size: 34px; }
-    p { margin: 0; color: #cfcfcf; max-width: 720px; }
-    main { max-width: 1100px; margin: auto; padding: 30px 20px; }
-    input {
+    .wrap{ max-width: 1100px; margin: 0 auto; }
+    h1{ margin:0 0 10px; font-size: 34px; letter-spacing: .2px; }
+    p{ margin:0; color: var(--muted); max-width: 780px; line-height: 1.5; }
+
+    .controls{
+      margin-top: 18px;
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+    input{
       width: 100%;
-      max-width: 420px;
-      padding: 14px;
+      max-width: 520px;
+      padding: 14px 14px;
       border-radius: 12px;
       border: 1px solid #333;
-      background: #12121a;
+      background: var(--panel2);
       color: white;
-      margin: 20px 0;
+      outline:none;
     }
-    .grid {
-      display: grid;
+    input:focus{ border-color:#444; }
+    .pill{
+      font-size: 12px;
+      color: var(--muted2);
+      border:1px solid #2b2b33;
+      background: rgba(255,255,255,.02);
+      padding: 10px 12px;
+      border-radius: 999px;
+    }
+    .pill a{ color: var(--muted2); text-decoration:none; }
+    .pill a:hover{ text-decoration: underline; }
+
+    main{ max-width: 1100px; margin: auto; padding: 26px 20px 40px; }
+    #status{ color: var(--muted2); margin: 6px 0 18px; }
+
+    .grid{
+      display:grid;
       grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
       gap: 18px;
     }
-    .card {
-      background: #111118;
-      border: 1px solid #222;
+    .card{
+      background: var(--panel);
+      border: 1px solid var(--border);
       border-radius: 18px;
       padding: 18px;
       box-shadow: 0 10px 24px rgba(0,0,0,.35);
+      transition: transform .08s ease, border-color .08s ease;
+      min-height: 120px;
     }
-    .date { font-size: 13px; color: #aaa; margin-bottom: 6px; }
-    .title a {
-      color: white;
-      text-decoration: none;
+    .card:hover{ transform: translateY(-2px); border-color:#2d2d35; }
+    .date{ font-size: 13px; color: #aaa; margin-bottom: 8px; }
+    .title{
       font-size: 16px;
-      line-height: 1.4;
+      line-height: 1.45;
+      margin: 0 0 8px;
     }
-    .title a:hover { text-decoration: underline; }
-    footer {
-      border-top: 1px solid #222;
+    .title a{
+      color: white;
+      text-decoration:none;
+    }
+    .title a:hover{ text-decoration: underline; }
+    .desc{
+      margin:0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    footer{
+      border-top: 1px solid var(--border);
       padding: 20px;
-      text-align: center;
-      color: #888;
+      text-align:center;
+      color: var(--muted2);
+    }
+    footer a{ color: var(--muted2); }
+
+    /* tiny skeleton */
+    .skeleton{
+      background: linear-gradient(90deg, #111118 25%, #171722 37%, #111118 63%);
+      background-size: 400% 100%;
+      animation: shimmer 1.2s ease-in-out infinite;
+      border-radius: 12px;
+      height: 12px;
+      margin: 8px 0;
+    }
+    @keyframes shimmer{
+      0%{ background-position: 100% 0; }
+      100%{ background-position: 0 0; }
     }
   </style>
 </head>
 
 <body>
   <header>
-    <h1>Ofile Mfetane — Writing Archive</h1>
-    <p>
-      A public research log on healthcare, inequality, and data systems.
-      All articles are pulled live from Medium.
-    </p>
-    <input id="search" placeholder="Search articles…" />
+    <div class="wrap">
+      <h1>Ofile Mfetane — Writing Archive</h1>
+      <p>
+        A public research log on healthcare, inequality, and data systems.
+        Articles are pulled live from Medium.
+      </p>
+
+      <div class="controls">
+        <input id="search" placeholder="Search articles…" autocomplete="off" />
+        <div class="pill">
+          Source:
+          <a href="https://medium.com/@ofilemfetane" target="_blank" rel="noopener noreferrer">medium.com/@ofilemfetane</a>
+        </div>
+      </div>
+    </div>
   </header>
 
   <main>
-    <div id="status">Loading articles…</div>
+    <div id="status">
+      <div class="skeleton" style="max-width:260px"></div>
+      <div class="skeleton" style="max-width:180px"></div>
+    </div>
     <div class="grid" id="grid"></div>
   </main>
 
   <footer>
-    Source: <a href="https://medium.com/@ofilemfetane" style="color:#aaa">Medium</a>
+    Built with GitHub Pages · Updated live from Medium RSS
   </footer>
 
 <script>
-  const FEED = "https://medium.com/feed/@ofilemfetane";
-  const API = "https://api.rss2json.com/v1/api.json?rss_url=" + encodeURIComponent(FEED);
+  // ✅ Medium RSS feed
+  const FEED_URL = "https://medium.com/feed/@ofilemfetane";
+
+  // ✅ CORS-safe proxy (works on GitHub Pages)
+  // If this ever goes down, tell me and I’ll give you a backup proxy.
+  const PROXY = "https://api.allorigins.win/raw?url=" + encodeURIComponent(FEED_URL);
 
   const grid = document.getElementById("grid");
-  const status = document.getElementById("status");
-  const search = document.getElementById("search");
+  const statusEl = document.getElementById("status");
+  const searchEl = document.getElementById("search");
+
   let posts = [];
 
-  fetch(API)
-    .then(r => r.json())
-    .then(data => {
-      posts = data.items || [];
-      render(posts);
-      status.textContent = posts.length + " articles";
-    })
-    .catch(() => status.textContent = "Could not load articles.");
+  function stripHtml(html) {
+    const div = document.createElement("div");
+    div.innerHTML = html || "";
+    return (div.textContent || div.innerText || "").trim();
+  }
+
+  function fmtDate(d) {
+    try {
+      return new Date(d).toDateString();
+    } catch {
+      return "";
+    }
+  }
+
+  function setStatus(text) {
+    statusEl.textContent = text;
+  }
 
   function render(list) {
     grid.innerHTML = "";
-    list.forEach(p => {
+
+    if (!list.length) {
+      const empty = document.createElement("div");
+      empty.className = "card";
+      empty.innerHTML = `<div class="date">No matches</div><div class="title">Try a different keyword.</div>`;
+      grid.appendChild(empty);
+      return;
+    }
+
+    for (const p of list) {
+      const card = document.createElement("div");
+      card.className = "card";
+
+      const date = document.createElement("div");
+      date.className = "date";
+      date.textContent = fmtDate(p.pubDate);
+
+      const title = document.createElement("div");
+      title.className = "title";
+      const a = document.createElement("a");
+      a.href = p.link;
+      a.target = "_blank";
+      a.rel = "noopener noreferrer";
+      a.textContent = p.title || "Untitled";
+      title.appendChild(a);
+
+      const desc = document.createElement("p");
+      desc.className = "desc";
+      desc.textContent = p.description || "";
+
+      card.appendChild(date);
+      card.appendChild(title);
+      if (p.description) card.appendChild(desc);
+
+      grid.appendChild(card);
+    }
+  }
+
+  async function load() {
+    try {
+      // show skeleton
+      grid.innerHTML = "";
+      for (let i = 0; i < 6; i++) {
+        const sk = document.createElement("div");
+        sk.className = "card";
+        sk.innerHTML = `
+          <div class="skeleton" style="max-width:120px"></div>
+          <div class="skeleton" style="max-width:240px; height:16px"></div>
+          <div class="skeleton" style="max-width:200px"></div>
+          <div class="skeleton" style="max-width:160px"></div>
+        `;
+        grid.appendChild(sk);
+      }
+
+      const res = await fetch(PROXY, { cache: "no-store" });
+      if (!res.ok) throw new Error("Feed fetch failed: " + res.status);
+      const xmlText = await res.text();
+
+      const doc = new DOMParser().parseFromString(xmlText, "text/xml");
+      const items = Array.from(doc.querySelectorAll("item"));
+
+      posts = items.map(item => {
+        const title = item.querySelector("title")?.textContent || "";
+        const link = item.querySelector("link")?.textContent || "";
+        const pubDate = item.querySelector("pubDate")?.textContent || "";
+
+        // Medium puts HTML inside <content:encoded> and <description>
+        const encoded = item.getElementsByTagName("content:encoded")[0]?.textContent || "";
+        const descriptionRaw = item.querySelector("description")?.textContent || encoded;
+
+        const cleanDesc = stripHtml(descriptionRaw).slice(0, 160);
+
+        return { title, link, pubDate, description: cleanDesc };
+      });
+
+      // sort newest first
+      posts.sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));
+
+      setStatus(`${posts.length} articles`);
+      render(posts);
+    } catch (err) {
+      console.error(err);
+      setStatus("Could not load articles. (Medium feed blocked or proxy down.)");
+      grid.innerHTML = "";
       const card = document.createElement("div");
       card.className = "card";
       card.innerHTML = `
-        <div class="date">${new Date(p.pubDate).toDateString()}</div>
-        <div class="title"><a href="${p.link}" target="_blank">${p.title}</a></div>
+        <div class="date">Error</div>
+        <div class="title">Could not load Medium RSS right now.</div>
+        <p class="desc">Open the Medium profile link above, or tell me and I’ll switch the site to a more reliable no-proxy method.</p>
       `;
       grid.appendChild(card);
-    });
+    }
   }
 
-  search.addEventListener("input", e => {
-    const q = e.target.value.toLowerCase();
-    render(posts.filter(p => p.title.toLowerCase().includes(q)));
+  // search (title + description)
+  searchEl.addEventListener("input", (e) => {
+    const q = (e.target.value || "").toLowerCase().trim();
+    if (!q) return render(posts);
+
+    const filtered = posts.filter(p =>
+      (p.title || "").toLowerCase().includes(q) ||
+      (p.description || "").toLowerCase().includes(q)
+    );
+    render(filtered);
   });
+
+  load();
 </script>
 </body>
 </html>
