@@ -1,0 +1,65 @@
+name: Build posts.json from Medium
+
+on:
+  schedule:
+    - cron: "0 */6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch Medium RSS and build posts.json
+        run: |
+          python - << 'PY'
+          import json, re
+          import xml.etree.ElementTree as ET
+          from urllib.request import urlopen, Request
+
+          FEED = "https://medium.com/feed/@ofilemfetane"
+
+          req = Request(FEED, headers={"User-Agent": "Mozilla/5.0"})
+          xml = urlopen(req).read().decode("utf-8", errors="ignore")
+
+          root = ET.fromstring(xml)
+
+          def strip_html(s):
+            s = re.sub(r"<[^>]+>", " ", s or "")
+            s = re.sub(r"\s+", " ", s).strip()
+            return s
+
+          items = []
+          for item in root.findall("./channel/item"):
+            title = (item.findtext("title") or "").strip()
+            link = (item.findtext("link") or "").strip()
+            pub  = (item.findtext("pubDate") or "").strip()
+            desc = (item.findtext("description") or "").strip()
+
+            # Fix relative links sometimes seen
+            if link.startswith("/"):
+              link = "https://medium.com" + link
+
+            items.append({
+              "title": title,
+              "link": link,
+              "pubDate": pub,
+              "description": strip_html(desc)[:180]
+            })
+
+          # Save newest first if dates parse weirdly we keep order
+          with open("posts.json", "w", encoding="utf-8") as f:
+            json.dump(items, f, ensure_ascii=False, indent=2)
+
+          print(f"Wrote {len(items)} posts to posts.json")
+          PY
+
+      - name: Commit changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Update posts.json"
+          file_pattern: posts.json
