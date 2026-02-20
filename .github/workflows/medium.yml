@@ -2,7 +2,7 @@ name: Update Medium posts in README
 
 on:
   schedule:
-    - cron: "0 */6 * * *"
+    - cron: "0 */6 * * *" # every 6 hours
   workflow_dispatch:
 
 permissions:
@@ -12,13 +12,14 @@ jobs:
   update-readme:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
       - name: Pull latest Medium posts
         uses: gautamkrishnar/blog-post-workflow@v1
         with:
           feed_list: "https://medium.com/feed/@ofilemfetane"
-          max_post_count: 50
+          max_post_count: 100
           readme_path: "README.md"
 
       - name: Commit changes
