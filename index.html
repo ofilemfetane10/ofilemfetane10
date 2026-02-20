@@ -63,7 +63,7 @@
     .pill a:hover{ text-decoration: underline; }
 
     main{ max-width: 1100px; margin: auto; padding: 26px 20px 40px; }
-    #status{ color: var(--muted2); margin: 6px 0 18px; }
+    #status{ color: var(--muted2); margin: 6px 0 18px; min-height: 22px; }
 
     .grid{
       display:grid;
@@ -106,7 +106,6 @@
     }
     footer a{ color: var(--muted2); }
 
-    /* tiny skeleton */
     .skeleton{
       background: linear-gradient(90deg, #111118 25%, #171722 37%, #111118 63%);
       background-size: 400% 100%;
@@ -132,7 +131,7 @@
       </p>
 
       <div class="controls">
-        <input id="search" placeholder="Search articles…" autocomplete="off" />
+        <input id="search" placeholder="Search articles…" autocomplete="off" aria-label="Search articles" />
         <div class="pill">
           Source:
           <a href="https://medium.com/@ofilemfetane" target="_blank" rel="noopener noreferrer">medium.com/@ofilemfetane</a>
@@ -154,12 +153,13 @@
   </footer>
 
 <script>
-  // ✅ Medium RSS feed
+  // Medium RSS feed
   const FEED_URL = "https://medium.com/feed/@ofilemfetane";
 
-  // ✅ CORS-safe proxy (works on GitHub Pages)
-  // If this ever goes down, tell me and I’ll give you a backup proxy.
-  const PROXY = "https://api.allorigins.win/raw?url=" + encodeURIComponent(FEED_URL);
+  // CORS-safe proxy (works on GitHub Pages)
+  // Add a cache-buster so you don't get stale results.
+  const cacheBust = Date.now();
+  const PROXY = "https://api.allorigins.win/raw?url=" + encodeURIComponent(FEED_URL) + "&_=" + cacheBust;
 
   const grid = document.getElementById("grid");
   const statusEl = document.getElementById("status");
@@ -170,19 +170,29 @@
   function stripHtml(html) {
     const div = document.createElement("div");
     div.innerHTML = html || "";
-    return (div.textContent || div.innerText || "").trim();
+    return (div.textContent || div.innerText || "").replace(/\s+/g, " ").trim();
+  }
+
+  function safeTime(d) {
+    const t = new Date(d).getTime();
+    return Number.isFinite(t) ? t : 0;
   }
 
   function fmtDate(d) {
-    try {
-      return new Date(d).toDateString();
-    } catch {
-      return "";
-    }
+    const t = safeTime(d);
+    return t ? new Date(t).toDateString() : "";
   }
 
   function setStatus(text) {
     statusEl.textContent = text;
+  }
+
+  function toMediumUrl(link) {
+    if (!link) return "";
+    // Some feeds provide relative links like "/p/xxxx"
+    if (link.startsWith("/")) return "https://medium.com" + link;
+    // Some provide "https://medium.com/@user/..."
+    return link;
   }
 
   function render(list) {
@@ -206,11 +216,13 @@
 
       const title = document.createElement("div");
       title.className = "title";
+
       const a = document.createElement("a");
-      a.href = p.link;
+      a.href = toMediumUrl(p.link);
       a.target = "_blank";
       a.rel = "noopener noreferrer";
       a.textContent = p.title || "Untitled";
+
       title.appendChild(a);
 
       const desc = document.createElement("p");
@@ -225,45 +237,59 @@
     }
   }
 
+  function showGridSkeleton() {
+    grid.innerHTML = "";
+    for (let i = 0; i < 6; i++) {
+      const sk = document.createElement("div");
+      sk.className = "card";
+      sk.innerHTML = `
+        <div class="skeleton" style="max-width:120px"></div>
+        <div class="skeleton" style="max-width:240px; height:16px"></div>
+        <div class="skeleton" style="max-width:200px"></div>
+        <div class="skeleton" style="max-width:160px"></div>
+      `;
+      grid.appendChild(sk);
+    }
+  }
+
+  function getEncodedContent(item) {
+    // DOMParser + namespaces can be inconsistent.
+    // We'll scan child nodes for anything that ends with "encoded".
+    const children = Array.from(item.children || []);
+    const encodedNode = children.find(n => (n.tagName || "").toLowerCase().endsWith("encoded"));
+    return encodedNode ? (encodedNode.textContent || "") : "";
+  }
+
   async function load() {
     try {
-      // show skeleton
-      grid.innerHTML = "";
-      for (let i = 0; i < 6; i++) {
-        const sk = document.createElement("div");
-        sk.className = "card";
-        sk.innerHTML = `
-          <div class="skeleton" style="max-width:120px"></div>
-          <div class="skeleton" style="max-width:240px; height:16px"></div>
-          <div class="skeleton" style="max-width:200px"></div>
-          <div class="skeleton" style="max-width:160px"></div>
-        `;
-        grid.appendChild(sk);
-      }
+      showGridSkeleton();
 
       const res = await fetch(PROXY, { cache: "no-store" });
       if (!res.ok) throw new Error("Feed fetch failed: " + res.status);
-      const xmlText = await res.text();
 
+      const xmlText = await res.text();
       const doc = new DOMParser().parseFromString(xmlText, "text/xml");
+
       const items = Array.from(doc.querySelectorAll("item"));
 
       posts = items.map(item => {
-        const title = item.querySelector("title")?.textContent || "";
-        const link = item.querySelector("link")?.textContent || "";
-        const pubDate = item.querySelector("pubDate")?.textContent || "";
+        const title = item.querySelector("title")?.textContent?.trim() || "";
+        const link = item.querySelector("link")?.textContent?.trim() || "";
+        const pubDate = item.querySelector("pubDate")?.textContent?.trim() || "";
 
-        // Medium puts HTML inside <content:encoded> and <description>
-        const encoded = item.getElementsByTagName("content:encoded")[0]?.textContent || "";
-        const descriptionRaw = item.querySelector("description")?.textContent || encoded;
+        const encoded = getEncodedContent(item);
+        const descriptionRaw =
+          item.querySelector("description")?.textContent ||
+          encoded ||
+          "";
 
         const cleanDesc = stripHtml(descriptionRaw).slice(0, 160);
 
         return { title, link, pubDate, description: cleanDesc };
       });
 
-      // sort newest first
-      posts.sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));
+      // newest first
+      posts.sort((a, b) => safeTime(b.pubDate) - safeTime(a.pubDate));
 
       setStatus(`${posts.length} articles`);
       render(posts);
@@ -276,7 +302,7 @@
       card.innerHTML = `
         <div class="date">Error</div>
         <div class="title">Could not load Medium RSS right now.</div>
-        <p class="desc">Open the Medium profile link above, or tell me and I’ll switch the site to a more reliable no-proxy method.</p>
+        <p class="desc">Open the Medium profile link above, or tell me and I’ll switch the site to a more reliable method.</p>
       `;
       grid.appendChild(card);
     }
