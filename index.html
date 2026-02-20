@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Ofile Mfetane — Writing Archive</title>
-  <meta name="description" content="A public research log on healthcare, inequality, and data systems. Articles pulled live from Medium." />
+  <meta name="description" content="A public research log on healthcare, inequality, and data systems. Articles updated from Medium RSS via GitHub Actions." />
 
   <style>
     :root{
@@ -58,6 +58,7 @@
       background: rgba(255,255,255,.02);
       padding: 10px 12px;
       border-radius: 999px;
+      white-space: nowrap;
     }
     .pill a{ color: var(--muted2); text-decoration:none; }
     .pill a:hover{ text-decoration: underline; }
@@ -127,7 +128,7 @@
       <h1>Ofile Mfetane — Writing Archive</h1>
       <p>
         A public research log on healthcare, inequality, and data systems.
-        Articles are pulled live from Medium.
+        Articles are updated from Medium RSS via GitHub Actions.
       </p>
 
       <div class="controls">
@@ -149,29 +150,15 @@
   </main>
 
   <footer>
-    Built with GitHub Pages · Updated live from Medium RSS
+    Built with GitHub Pages · Updated from Medium RSS
   </footer>
 
 <script>
-  // Medium RSS feed
-  const FEED_URL = "https://medium.com/feed/@ofilemfetane";
-
-  // CORS-safe proxy (works on GitHub Pages)
-  // Add a cache-buster so you don't get stale results.
-  const cacheBust = Date.now();
-  const PROXY = "https://api.allorigins.win/raw?url=" + encodeURIComponent(FEED_URL) + "&_=" + cacheBust;
-
   const grid = document.getElementById("grid");
   const statusEl = document.getElementById("status");
   const searchEl = document.getElementById("search");
 
   let posts = [];
-
-  function stripHtml(html) {
-    const div = document.createElement("div");
-    div.innerHTML = html || "";
-    return (div.textContent || div.innerText || "").replace(/\s+/g, " ").trim();
-  }
 
   function safeTime(d) {
     const t = new Date(d).getTime();
@@ -183,16 +170,13 @@
     return t ? new Date(t).toDateString() : "";
   }
 
-  function setStatus(text) {
-    statusEl.textContent = text;
-  }
-
-  function toMediumUrl(link) {
-    if (!link) return "";
-    // Some feeds provide relative links like "/p/xxxx"
-    if (link.startsWith("/")) return "https://medium.com" + link;
-    // Some provide "https://medium.com/@user/..."
-    return link;
+  function escapeHtml(s) {
+    return (s || "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
   }
 
   function render(list) {
@@ -207,32 +191,17 @@
     }
 
     for (const p of list) {
+      const title = escapeHtml(p.title || "Untitled");
+      const link = p.link || "";
+      const desc = escapeHtml(p.description || "");
+
       const card = document.createElement("div");
       card.className = "card";
-
-      const date = document.createElement("div");
-      date.className = "date";
-      date.textContent = fmtDate(p.pubDate);
-
-      const title = document.createElement("div");
-      title.className = "title";
-
-      const a = document.createElement("a");
-      a.href = toMediumUrl(p.link);
-      a.target = "_blank";
-      a.rel = "noopener noreferrer";
-      a.textContent = p.title || "Untitled";
-
-      title.appendChild(a);
-
-      const desc = document.createElement("p");
-      desc.className = "desc";
-      desc.textContent = p.description || "";
-
-      card.appendChild(date);
-      card.appendChild(title);
-      if (p.description) card.appendChild(desc);
-
+      card.innerHTML = `
+        <div class="date">${escapeHtml(fmtDate(p.pubDate))}</div>
+        <div class="title"><a href="${link}" target="_blank" rel="noopener noreferrer">${title}</a></div>
+        ${desc ? `<p class="desc">${desc}</p>` : ``}
+      `;
       grid.appendChild(card);
     }
   }
@@ -252,72 +221,48 @@
     }
   }
 
-  function getEncodedContent(item) {
-    // DOMParser + namespaces can be inconsistent.
-    // We'll scan child nodes for anything that ends with "encoded".
-    const children = Array.from(item.children || []);
-    const encodedNode = children.find(n => (n.tagName || "").toLowerCase().endsWith("encoded"));
-    return encodedNode ? (encodedNode.textContent || "") : "";
-  }
-
   async function load() {
     try {
       showGridSkeleton();
 
-      const res = await fetch(PROXY, { cache: "no-store" });
-      if (!res.ok) throw new Error("Feed fetch failed: " + res.status);
+      // IMPORTANT: posts.json must exist in the same folder as index.html
+      const res = await fetch("./posts.json?_=" + Date.now(), { cache: "no-store" });
+      if (!res.ok) throw new Error("posts.json not found (run workflow once)");
 
-      const xmlText = await res.text();
-      const doc = new DOMParser().parseFromString(xmlText, "text/xml");
+      posts = await res.json();
 
-      const items = Array.from(doc.querySelectorAll("item"));
-
-      posts = items.map(item => {
-        const title = item.querySelector("title")?.textContent?.trim() || "";
-        const link = item.querySelector("link")?.textContent?.trim() || "";
-        const pubDate = item.querySelector("pubDate")?.textContent?.trim() || "";
-
-        const encoded = getEncodedContent(item);
-        const descriptionRaw =
-          item.querySelector("description")?.textContent ||
-          encoded ||
-          "";
-
-        const cleanDesc = stripHtml(descriptionRaw).slice(0, 160);
-
-        return { title, link, pubDate, description: cleanDesc };
-      });
-
-      // newest first
+      // sort newest first (in case)
       posts.sort((a, b) => safeTime(b.pubDate) - safeTime(a.pubDate));
 
-      setStatus(`${posts.length} articles`);
+      statusEl.textContent = `${posts.length} articles`;
       render(posts);
     } catch (err) {
       console.error(err);
-      setStatus("Could not load articles. (Medium feed blocked or proxy down.)");
+      statusEl.textContent = "Could not load articles (posts.json missing).";
+
       grid.innerHTML = "";
       const card = document.createElement("div");
       card.className = "card";
       card.innerHTML = `
-        <div class="date">Error</div>
-        <div class="title">Could not load Medium RSS right now.</div>
-        <p class="desc">Open the Medium profile link above, or tell me and I’ll switch the site to a more reliable method.</p>
+        <div class="date">Setup needed</div>
+        <div class="title">posts.json is missing</div>
+        <p class="desc">
+          Run your GitHub Action once to generate <b>posts.json</b>, then refresh this page.
+          (Actions → “Build posts.json from Medium” → Run workflow)
+        </p>
       `;
       grid.appendChild(card);
     }
   }
 
-  // search (title + description)
   searchEl.addEventListener("input", (e) => {
     const q = (e.target.value || "").toLowerCase().trim();
     if (!q) return render(posts);
 
-    const filtered = posts.filter(p =>
+    render(posts.filter(p =>
       (p.title || "").toLowerCase().includes(q) ||
       (p.description || "").toLowerCase().includes(q)
-    );
-    render(filtered);
+    ));
   });
 
   load();
