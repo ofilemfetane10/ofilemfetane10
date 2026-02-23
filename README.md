@@ -7,8 +7,6 @@ healthcare systems, inequality, data insights, and real-world outcomes.
 
 All articles below are **auto-updated** directly from Medium.
 
----
-
 ##  Latest Medium Articles
 <!-- BLOG-POST-LIST:START -->
 - [Europe After COVID: Which Countries Bounced Back — and Which Didn’t](https://medium.com/@ofilemfetane/europe-after-covid-which-countries-bounced-back-and-which-didnt-1a5037a1b8a5?source=rss-0caa044592bb------2)
@@ -24,8 +22,6 @@ Referral Concentration in Medicare’s DME System](https://medium.com/@ofilemfet
 - [Eight Drugs, Half the Budget](https://medium.com/@ofilemfetane/eight-drugs-half-the-budget-8fc9eeec1442?source=rss-0caa044592bb------2)
 <!-- BLOG-POST-LIST:END -->
 
----
-
 ##  What I Write About
 - Healthcare inequality & access
 - Health systems & outcomes (EU / US)
@@ -33,5 +29,4 @@ Referral Concentration in Medicare’s DME System](https://medium.com/@ofilemfet
 - Exploratory data analysis with real datasets
 - Translating data into clear, human insight
 
----
 **Read all articles (full archive) →** https://medium.com/@ofilemfetane
