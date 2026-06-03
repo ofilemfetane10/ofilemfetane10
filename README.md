@@ -9,6 +9,7 @@ All articles below are **auto-updated** directly from Medium.
 
 ##  Latest Medium Articles
 <!-- BLOG-POST-LIST:START -->
+- [The Most Dangerous AI Problem in Healthcare Isn’t Hallucination. It’s Confidence.](https://medium.com/@ofilemfetane/the-most-dangerous-ai-problem-in-healthcare-isnt-hallucination-it-s-confidence-20e5a8040bfa?source=rss-0caa044592bb------2)
 - [Europe After COVID: Which Countries Bounced Back — and Which Didn’t](https://medium.com/@ofilemfetane/europe-after-covid-which-countries-bounced-back-and-which-didnt-1a5037a1b8a5?source=rss-0caa044592bb------2)
 - [Healthcare Inequality: Why Greece Has 3× More Doctors Than Turkey](https://medium.com/@ofilemfetane/healthcare-inequality-why-greece-has-3-more-doctors-than-turkey-23f8e123d73c?source=rss-0caa044592bb------2)
 - [When Hospital Capacity Doesn’t Mean Better Outcomes: A Structural Look at European Healthcare](https://medium.com/@ofilemfetane/when-hospital-capacity-doesnt-mean-better-outcomes-a-structural-look-at-european-healthcare-f758d5a87ca5?source=rss-0caa044592bb------2)
@@ -19,7 +20,6 @@ All articles below are **auto-updated** directly from Medium.
 - [Who Controls Medical Equipment Access?
 Referral Concentration in Medicare’s DME System](https://medium.com/@ofilemfetane/who-controls-medical-equipment-access-referral-concentration-in-medicares-dme-system-687043049eb2?source=rss-0caa044592bb------2)
 - [Medicare Part B Drug Spending: How a Handful of Drugs Dominate Outpatient Care](https://medium.com/@ofilemfetane/medicare-part-b-drug-spending-how-a-handful-of-drugs-dominate-outpatient-care-12852b7738d6?source=rss-0caa044592bb------2)
-- [Eight Drugs, Half the Budget](https://medium.com/@ofilemfetane/eight-drugs-half-the-budget-8fc9eeec1442?source=rss-0caa044592bb------2)
 <!-- BLOG-POST-LIST:END -->
 
 ##  What I Write About
